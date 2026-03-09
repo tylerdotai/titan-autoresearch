@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Titan Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            background: #0a0a0f;
+            color: #e4e4e7;
+            font-family: 'JetBrains Mono', monospace;
+            min-height: 100vh;
+        }
+        
+        .gradient-border {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 1px solid #2d2d44;
+            border-radius: 12px;
+        }
+        
+        .glow {
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.15);
+        }
+        
+        .stat-card {
+            background: linear-gradient(145deg, #12121a 0%, #1a1a24 100%);
+            border: 1px solid #2a2a3a;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            border-color: #6366f1;
+            transform: translateY(-2px);
+        }
+        
+        .pulse-green { animation: pulse-green 2s infinite; }
+        .pulse-yellow { animation: pulse-yellow 2s infinite; }
+        .pulse-red { animation: pulse-red 2s infinite; }
+        
+        @keyframes pulse-green {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+        }
+        
+        @keyframes pulse-yellow {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(234, 179, 8, 0); }
+        }
+        
+        @keyframes pulse-red {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+        
+        pre {
+            background: #0d0d12;
+            border-radius: 8px;
+            padding: 16px;
+            overflow-x: auto;
+            font-size: 11px;
+            line-height: 1.6;
+        }
+        
+        .log-line { padding: 2px 0; }
+        .log-step { color: #6366f1; }
+        .log-loss { color: #22c55e; }
+        .log-warn { color: #eab308; }
+        .log-error { color: #ef4444; }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-running { background: #22c55e; }
+        .status-stopped { background: #6b7280; }
+        .status-training { background: #3b82f6; }
+        
+        .metric-label {
+            color: #71717a;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .metric-value {
+            color: #f4f4f5;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .metric-unit {
+            color: #71717a;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body class="p-6">
+    <!-- Header -->
+    <div class="max-w-7xl mx-auto">
+        <div class="flex items-center justify-between mb-8">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 gradient-border glow flex items-center justify-center">
+                    <i class="fas fa-microchip text-2xl text-indigo-400"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold">Titan Dashboard</h1>
+                    <p class="text-zinc-500 text-sm">AMD Strix Halo • GMKTec Evo X2</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="statusIndicator" class="status-dot status-stopped"></span>
+                <span id="statusText" class="text-zinc-400">Idle</span>
+            </div>
+        </div>
+        
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
+            <!-- Model Size -->
+            <div class="stat-card p-4">
+                <div class="metric-label mb-1">Model Size</div>
+                <div class="metric-value" id="modelSize">--</div>
+                <div class="metric-unit">params</div>
+            </div>
+            
+            <!-- Loss -->
+            <div class="stat-card p-4">
+                <div class="metric-label mb-1">Loss</div>
+                <div class="metric-value" id="loss">--</div>
+                <div class="metric-unit text-green-400" id="lossDelta"></div>
+            </div>
+            
+            <!-- Throughput -->
+            <div class="stat-card p-4">
+                <div class="metric-label mb-1">Throughput</div>
+                <div class="metric-value" id="throughput">--</div>
+                <div class="metric-unit">tok/s</div>
+            </div>
+            
+            <!-- Steps -->
+            <div class="stat-card p-4">
+                <div class="metric-label mb-1">Steps</div>
+                <div class="metric-value" id="steps">--</div>
+                <div class="metric-unit" id="progressPct"></div>
+            </div>
+            
+            <!-- Time -->
+            <div class="stat-card p-4">
+                <div class="metric-label mb-1">Time</div>
+                <div class="metric-value" id="time">--</div>
+                <div class="metric-unit">elapsed</div>
+            </div>
+            
+            <!-- GPU -->
+            <div class="stat-card p-4">
+                <div class="metric-label mb-1">GPU Memory</div>
+                <div class="metric-value" id="gpuMem">--</div>
+                <div class="metric-unit">used</div>
+            </div>
+        </div>
+        
+        <!-- Two Column Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Training Progress -->
+            <div class="lg:col-span-2 gradient-border p-6">
+                <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <i class="fas fa-bolt text-yellow-400"></i>
+                    Training Progress
+                </h2>
+                
+                <div class="mb-4">
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="text-zinc-400">Progress</span>
+                        <span class="text-zinc-300" id="progressText">0%</span>
+                    </div>
+                    <div class="h-2 bg-zinc-800 rounded-full overflow-hidden">
+                        <div class="progress-bar h-full" id="progressBar" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-4 mb-4">
+                    <div class="bg-zinc-900/50 rounded-lg p-3">
+                        <div class="text-zinc-500 text-xs">LR Multiplier</div>
+                        <div class="text-lg font-mono" id="lrm">--</div>
+                    </div>
+                    <div class="bg-zinc-900/50 rounded-lg p-3">
+                        <div class="text-zinc-500 text-xs">DT/Step</div>
+                        <div class="text-lg font-mono" id="dt">--</div>
+                    </div>
+                    <div class="bg-zinc-900/50 rounded-lg p-3">
+                        <div class="text-zinc-500 text-xs">MFU</div>
+                        <div class="text-lg font-mono" id="mfu">--</div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="text-zinc-500 text-xs mb-2">Config</div>
+                    <div class="bg-zinc-900/50 rounded-lg p-3 font-mono text-sm" id="config">
+                        DEPTH=-- | BATCH=-- | SEQ=--
+                    </div>
+                </div>
+            </div>
+            
+            <!-- System Info -->
+            <div class="gradient-border p-6">
+                <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <i class="fas fa-server text-blue-400"></i>
+                    System
+                </h2>
+                
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-zinc-500">CPU</span>
+                        <span id="cpu">Ryzen AI Max+ 395</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-zinc-500">RAM</span>
+                        <span id="ram">128GB</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-zinc-500">GPU</span>
+                        <span>Radeon 8060S</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-zinc-500">ROCm</span>
+                        <span id="rocm">7.2</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-zinc-500">Data</span>
+                        <span id="dataPairs">986 pairs</span>
+                    </div>
+                </div>
+                
+                <div class="mt-6 pt-4 border-t border-zinc-800">
+                    <div class="text-zinc-500 text-xs mb-2">Links</div>
+                    <div class="flex gap-2">
+                        <a href="http://192.168.0.247:8765" class="text-xs bg-zinc-800 px-2 py-1 rounded hover:bg-zinc-700">Raw Logs</a>
+                        <a href="https://github.com/tylerdotai/titan-autoresearch-private" class="text-xs bg-zinc-800 px-2 py-1 rounded hover:bg-zinc-700">GitHub</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Live Logs -->
+        <div class="gradient-border p-6 mt-6">
+            <h2 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                <i class="fas fa-terminal text-green-400"></i>
+                Live Logs
+                <span class="text-xs text-zinc-500 ml-auto">Auto-refreshes every 3s</span>
+            </h2>
+            <pre id="logs"></pre>
+        </div>
+    </div>
+    
+    <script>
+        const LOG_FILE = "/tmp/finetune2.log";
+        const AUTONOMOUS_LOG = "/tmp/autonomous.log";
+        
+        async function fetchLogs() {
+            try {
+                const response = await fetch("http://192.168.0.247:8765");
+                const text = await response.text();
+                document.getElementById('logs').innerHTML = formatLogs(text);
+            } catch (e) {
+                document.getElementById('logs').textContent = "Unable to fetch logs";
+            }
+        }
+        
+        function formatLogs(text) {
+            const lines = text.split('\n').slice(-50);
+            return lines.map(line => {
+                if (line.includes('step')) {
+                    return `<span class="log-line log-step">${escapeHtml(line)}</span>`;
+                } else if (line.includes('loss:')) {
+                    return `<span class="log-line log-loss">${escapeHtml(line)}</span>`;
+                } else if (line.includes('Warning')) {
+                    return `<span class="log-line log-warn">${escapeHtml(line)}</span>`;
+                } else if (line.includes('Error') || line.includes('error')) {
+                    return `<span class="log-line log-error">${escapeHtml(line)}</span>`;
+                }
+                return `<span class="log-line">${escapeHtml(line)}</span>`;
+            }).join('\n');
+        }
+        
+        function escapeHtml(text) {
+            return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+        
+        function parseLogLine(line) {
+            // Parse step line: step 00001 (0.0%) | loss: 8.968309 | lrm: 1.00 | dt: 9100ms | tok/sec: 3,600 | mfu: 1.3%
+            const stepMatch = line.match(/step (\d+).*loss: ([\d.]+).*lrm: ([\d.]+).*dt: (\d+)ms.*tok\/sec: ([\d,]+).*mfu: ([\d.]+)%/);
+            if (stepMatch) {
+                return {
+                    step: stepMatch[1],
+                    loss: parseFloat(stepMatch[2]),
+                    lrm: stepMatch[3],
+                    dt: stepMatch[4],
+                    throughput: stepMatch[5].replace(',', ''),
+                    mfu: stepMatch[6]
+                };
+            }
+            
+            // Parse config
+            const configMatch = line.match(/n_layer.*?(\d+).*n_embd.*?(\d+)/);
+            if (configMatch) {
+                return { n_layer: configMatch[1], n_embd: configMatch[2] };
+            }
+            
+            // Parse params
+            const paramMatch = line.match(/total\s+:\s+([\d,]+)/);
+            if (paramMatch) {
+                return { params: paramMatch[1].replace(',', '') };
+            }
+            
+            return null;
+        }
+        
+        async function updateStats() {
+            try {
+                const response = await fetch("http://192.168.0.247:8765");
+                const text = await response.text();
+                
+                const lines = text.split('\n');
+                let lastStep = null;
+                
+                for (let i = lines.length - 1; i >= 0; i--) {
+                    const parsed = parseLogLine(lines[i]);
+                    if (parsed) {
+                        if (parsed.step) {
+                            lastStep = parsed;
+                            document.getElementById('statusIndicator').className = 'status-dot status-running pulse-green';
+                            document.getElementById('statusText').textContent = 'Training';
+                            document.getElementById('loss').textContent = parsed.loss.toFixed(4);
+                            document.getElementById('throughput').textContent = parsed.throughput;
+                            document.getElementById('steps').textContent = parsed.step;
+                            document.getElementById('lrm').textContent = parsed.lrm;
+                            document.getElementById('dt').textContent = parsed.dt + 'ms';
+                            document.getElementById('mfu').textContent = parsed.mfu + '%';
+                            
+                            // Progress
+                            const pct = Math.min(100, parseInt(parsed.step) / 50 * 100);
+                            document.getElementById('progressBar').style.width = pct + '%';
+                            document.getElementById('progressText').textContent = pct.toFixed(0) + '%';
+                        }
+                        if (parsed.params) {
+                            document.getElementById('modelSize').textContent = (parseInt(parsed.params) / 1000000).toFixed(0) + 'M';
+                        }
+                        if (parsed.n_layer) {
+                            document.getElementById('config').textContent = `DEPTH=${parsed.n_layer} | EMBED=${parsed.n_embd}`;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log(e);
+            }
+        }
+        
+        // Auto-refresh
+        fetchLogs();
+        updateStats();
+        
+        setInterval(() => {
+            fetchLogs();
+            updateStats();
+        }, 3000);
+    </script>
+</body>
+</html>
