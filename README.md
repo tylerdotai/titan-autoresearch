@@ -13,7 +13,7 @@
 - Hardware: AMD Ryzen AI Max+ 395, 128GB RAM
 - GPU: AMD Radeon 8060S (integrated, unified memory)
 - Agent: Qwen3.5-0.8B via llama-server on port 8402
-- Training: nanochat ~10M params
+- Training: nanochat 500M+ params
 
 ## Quick Start
 
@@ -25,11 +25,28 @@ docker exec -d llama-box bash -c 'llama-server -m /models/Qwen3.5-0.8B-Q4_K_M.gg
 python train.py
 ```
 
-## Config (Pre-tuned)
+## Strix Halo Benchmarks (Tested)
 
-- DEPTH = 3
-- DEVICE_BATCH_SIZE = 16
-- TOTAL_BATCH_SIZE = 32768
+| Params | Depth | Batch | Throughput | Status |
+|--------|-------|-------|------------|--------|
+| 11M | 2 | 16 | 45k tok/s | ✅ |
+| 26M | 6 | 32 | 27k tok/s | ✅ |
+| 86M | 10 | 48 | 20k tok/s | ✅ |
+| 201M | 14 | 32 | 10k tok/s | ✅ |
+| 519M | 20 | 16 | 4.3k tok/s | ✅ |
+| 856M | 24 | 8 | 2.5k tok/s | ✅ |
+| 1.3B | 28 | 4 | 1.7k tok/s | ✅ |
+| 1.9B | 32 | 2 | 900 tok/s | ✅ |
+
+**Sweet Spot: 500M params** - Best balance of size vs speed
+
+## Config (Pre-tuned for Sweet Spot)
+
+```python
+DEPTH = 20
+DEVICE_BATCH_SIZE = 16
+TOTAL_BATCH_SIZE = 32768
+```
 
 ## Key Flags
 
