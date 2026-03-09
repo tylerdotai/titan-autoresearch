@@ -1,19 +1,19 @@
 # titan-autoresearch
 
-🤖 Autonomous LLM research agent for AMD Strix Halo.
+🤖 Autonomous LLM research on AMD Strix Halo.
 
 ![Platform](https://img.shields.io/badge/Platform-AMD%20Strix%20Halo-orange)
 ![Python](https://img.shields.io/badge/Python-3.11+-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-> Based on karpathy/autoresearch - turn one GPU into a research lab.
+> Based on [karpathy/autoresearch](https://github.com/karpathy/autoresearch) - turn one GPU into a research lab.
 
-## System
+## The Setup
 
-- Hardware: AMD Ryzen AI Max+ 395, 128GB RAM
-- GPU: AMD Radeon 8060S (integrated, unified memory)
-- Agent: Qwen3.5-0.8B via llama-server on port 8402
-- Training: nanochat 500M+ params
+- **Hardware:** GMKTec Evo X2 (AMD Ryzen AI Max+ 395, 128GB RAM)
+- **GPU:** AMD Radeon 8060S (integrated, unified memory)
+- **Agent:** Qwen3.5-0.8B via llama-server on port 8402
+- **Training:** nanochat ~500M params
 
 ## Quick Start
 
@@ -25,7 +25,7 @@ docker exec -d llama-box bash -c 'llama-server -m /models/Qwen3.5-0.8B-Q4_K_M.gg
 python train.py
 ```
 
-## Strix Halo Benchmarks (Tested)
+## Benchmarks
 
 | Params | Depth | Batch | Throughput | Status |
 |--------|-------|-------|------------|--------|
@@ -38,9 +38,9 @@ python train.py
 | 1.3B | 28 | 4 | 1.7k tok/s | ✅ |
 | 1.9B | 32 | 2 | 900 tok/s | ✅ |
 
-**Sweet Spot: 500M params** - Best balance of size vs speed
+**Sweet Spot:** 500M params - Best balance of size vs speed
 
-## Config (Pre-tuned for Sweet Spot)
+## Config (Pre-tuned)
 
 ```python
 DEPTH = 20
@@ -60,6 +60,13 @@ TOTAL_BATCH_SIZE = 32768
 - 128GB RAM
 - llama-server on port 8402
 
+## The Vision
+
+Building toward AGI one GPU at a time. This is the foundation:
+- Autonomous research experiments
+- Personal AI assistant training
+- Self-improving agents
+
 MIT License - see LICENSE for details.
 
-Built with 🦞 by [@tylerdotai](https://x.com/tylerdotai)
+⚡ by [@tylerdotai](https://x.com/tylerdotai)
