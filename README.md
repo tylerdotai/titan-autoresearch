@@ -13,12 +13,12 @@
 - **Hardware:** GMKTec Evo X2 (AMD Ryzen AI Max+ 395, 128GB RAM)
 - **GPU:** AMD Radeon 8060S (integrated, unified memory)
 - **Agent:** Qwen3.5-0.8B via llama-server on port 8402
-- **Training:** nanochat ~500M params
+- **Training:** nanochat ~200M-500M params
 
 ## Quick Start
 
 ```bash
-# Start llama-server (agent brain)
+# Start llama-server
 docker exec -d llama-box bash -c 'llama-server -m /models/Qwen3.5-0.8B-Q4_K_M.gguf -fa 1 --no-mmap -ngl 999 --host 0.0.0.0 --port 8402'
 
 # Run training
@@ -28,7 +28,7 @@ python train.py
 ## Benchmarks
 
 | Params | Depth | Batch | Throughput | Status |
-|--------|-------|-------|------------|--------|
+|---------|-------|-------|------------|--------|
 | 11M | 2 | 16 | 45k tok/s | ✅ |
 | 26M | 6 | 32 | 27k tok/s | ✅ |
 | 86M | 10 | 48 | 20k tok/s | ✅ |
@@ -38,13 +38,11 @@ python train.py
 | 1.3B | 28 | 4 | 1.7k tok/s | ✅ |
 | 1.9B | 32 | 2 | 900 tok/s | ✅ |
 
-**Sweet Spot:** 500M params - Best balance of size vs speed
-
-## Config (Pre-tuned)
+## Current Config
 
 ```python
-DEPTH = 20
-DEVICE_BATCH_SIZE = 16
+DEPTH = 12-16
+DEVICE_BATCH_SIZE = 2-4
 TOTAL_BATCH_SIZE = 32768
 ```
 
@@ -62,10 +60,11 @@ TOTAL_BATCH_SIZE = 32768
 
 ## The Vision
 
-Building toward AGI one GPU at a time. This is the foundation:
+Building toward AGI one GPU at a time:
 - Autonomous research experiments
 - Personal AI assistant training
 - Self-improving agents
+- 24/7 autonomous agent mesh
 
 MIT License - see LICENSE for details.
 
