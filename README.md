@@ -1,71 +1,82 @@
-# titan-autoresearch
+# Titan Autoresearch
 
-🤖 Autonomous LLM research on AMD Strix Halo.
+Autonomous LLM research experiments focused on AMD Strix Halo hardware, local inference, and benchmark-driven iteration.
 
-![Platform](https://img.shields.io/badge/Platform-AMD%20Strix%20Halo-orange)
-![Python](https://img.shields.io/badge/Python-3.11+-blue)
-![License](https://img.shields.io/badge/License-MIT-green)
+## Status
 
-> Based on [karpathy/autoresearch](https://github.com/karpathy/autoresearch) - turn one GPU into a research lab.
+- Experimental research repo
+- Current repo is primarily documentation and benchmark tracking
+- Training harness and reproducible automation are not fully published here yet
 
-## The Setup
+## About
 
-- **Hardware:** GMKTec Evo X2 (AMD Ryzen AI Max+ 395, 128GB RAM)
-- **GPU:** AMD Radeon 8060S (integrated, unified memory)
-- **Agent:** Qwen3.5-0.8B via llama-server on port 8402
-- **Training:** nanochat ~200M-500M params
+Titan Autoresearch is a working notebook-style repository for local LLM research on AMD Strix Halo hardware. It captures the hardware setup, benchmark results, and operating assumptions behind an autonomous research workflow built around local inference and iterative model training.
 
-## Quick Start
+## Current Scope
+
+- Hardware and model setup notes for AMD Strix Halo
+- Throughput and scaling benchmarks across model sizes
+- Reference launch flags for local inference
+- A dashboard prototype in `new-dashboard.html`
+- A public snapshot of the broader Titan Autoresearch effort
+
+## Built With
+
+- Markdown
+- HTML
+- Python workflows
+- llama.cpp / `llama-server`
+- Local LLM research infrastructure
+
+## Project Structure
+
+```text
+README.md             Public overview, benchmarks, and operating notes
+new-dashboard.html    Dashboard prototype for viewing research progress
+```
+
+## Getting Started
+
+### Prerequisites
+
+- AMD Strix Halo-class hardware or comparable local inference setup
+- Python 3.11+
+- `llama-server` configured for local model serving
+
+### Installation
 
 ```bash
-# Start llama-server
-docker exec -d llama-box bash -c 'llama-server -m /models/Qwen3.5-0.8B-Q4_K_M.gguf -fa 1 --no-mmap -ngl 999 --host 0.0.0.0 --port 8402'
-
-# Run training
-python train.py
+git clone https://github.com/tylerdotai/titan-autoresearch.git
+cd titan-autoresearch
 ```
 
-## Benchmarks
+## Development
 
-| Params | Depth | Batch | Throughput | Status |
-|---------|-------|-------|------------|--------|
-| 11M | 2 | 16 | 45k tok/s | ✅ |
-| 26M | 6 | 32 | 27k tok/s | ✅ |
-| 86M | 10 | 48 | 20k tok/s | ✅ |
-| 201M | 14 | 32 | 10k tok/s | ✅ |
-| 519M | 20 | 16 | 4.3k tok/s | ✅ |
-| 856M | 24 | 8 | 2.5k tok/s | ✅ |
-| 1.3B | 28 | 4 | 1.7k tok/s | ✅ |
-| 1.9B | 32 | 2 | 900 tok/s | ✅ |
+This repo currently serves best as a reference for the research setup rather than a turnkey training package.
 
-## Current Config
-
-```python
-DEPTH = 12-16
-DEVICE_BATCH_SIZE = 2-4
-TOTAL_BATCH_SIZE = 32768
+```bash
+open new-dashboard.html
 ```
 
-## Key Flags
+## Deployment
 
-- `-fa 1` = Flash Attention (required for Strix Halo)
-- `--no-mmap` = Critical for unified memory
-- `-ngl 999` = Load all layers to GPU
+There is no formal deployment target yet.
 
-## Requirements
+- Repository: `https://github.com/tylerdotai/titan-autoresearch`
 
-- AMD Strix Halo with ROCm 7.2+
-- 128GB RAM
-- llama-server on port 8402
+## Current Limitations
 
-## The Vision
+- The public repo does not yet include the full training pipeline
+- Benchmarks are documented, but reproducible scripts are still limited
+- Setup instructions are hardware-specific and assume a local experimentation workflow
 
-Building toward AGI one GPU at a time:
-- Autonomous research experiments
-- Personal AI assistant training
-- Self-improving agents
-- 24/7 autonomous agent mesh
+## Roadmap
 
-MIT License - see LICENSE for details.
+- Publish the reproducible training harness
+- Add benchmark automation and result export
+- Document the full local inference stack end to end
+- Expand the dashboard beyond a static prototype
 
-⚡ by [@tylerdotai](https://x.com/tylerdotai)
+## License
+
+No license has been added yet.
